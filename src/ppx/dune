@@ -1,0 +1,4 @@
+(executable
+ (name atproto_lexicon_ppx)
+ (public_name atproto-lexicon-ppx)
+ (libraries atproto_lexicon ppxlib))
