@@ -1,4 +1,4 @@
 (library
  (name atproto_lexicon)
  (public_name atproto-lexicon)
- (libraries jsont jsont.bytesrw))
+ (libraries uri jsont jsont.bytesrw))

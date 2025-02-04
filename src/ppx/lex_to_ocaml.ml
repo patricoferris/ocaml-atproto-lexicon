@@ -34,14 +34,18 @@ let ocamlise (s, is_module) =
     if String.equal s s' then (s', []) else (s', [ make_key s ])
 
 let nsid_resolution s =
-  if String.starts_with ~prefix:"#" s then
-    (String.sub s 1 (String.length s - 1), false)
-  else
-    match String.split_on_char '.' s with
-    | _ :: _ :: rest ->
-        List.map String.capitalize_ascii rest |> String.concat "." |> fun s ->
-        (s ^ ".t", true)
-    | _ -> failwith ("nsid resolution: " ^ s)
+  let nsid = Uri.of_string s in
+  match (Uri.path nsid, Uri.fragment nsid) with
+  | "", Some frag -> (frag, false)
+  | path, frag when path <> "" -> (
+      match String.split_on_char '.' path with
+      | _ :: _ :: rest -> (
+          let s = List.map String.capitalize_ascii rest |> String.concat "." in
+          match frag with
+          | None -> (s ^ ".t", true)
+          | Some f -> (s ^ "." ^ fst (ocamlise (f, false)), true))
+      | _ -> failwith "")
+  | _ -> failwith ("nsid resolution: " ^ s)
 
 type type' =
   | Declaration of type_declaration
@@ -127,6 +131,7 @@ and union_to_type (u : Definition.union) =
     List.map
       (fun s ->
         let lbl =
+          let s = Uri.of_string s |> Uri.path in
           String.split_on_char '.' s |> List.rev |> List.hd
           |> String.capitalize_ascii
         in
