@@ -131,9 +131,12 @@ and union_to_type (u : Definition.union) =
     List.map
       (fun s ->
         let lbl =
-          let s = Uri.of_string s |> Uri.path in
-          String.split_on_char '.' s |> List.rev |> List.hd
-          |> String.capitalize_ascii
+          let uri = Uri.of_string s in
+          let s = Uri.path uri in
+          if s = "" then String.capitalize_ascii (Uri.fragment uri |> Option.get)
+          else
+            String.split_on_char '.' s |> List.rev |> List.hd
+            |> String.capitalize_ascii
         in
         let type_, _ = ocamlise @@ nsid_resolution s in
         {
